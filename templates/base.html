@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Mastermind</title>
+</head>
+
+<body>
+
+  <main>
+
+    <div class="container">
+
+      {% for category, message in get_flashed_messages(with_categories=True) %}
+      <div>{{ message }}</div>
+      {% endfor %}
+
+      {% block content %}
+      {% endblock %}
+
+    </div>
+
+  </main>
+</body>
+
+</html>

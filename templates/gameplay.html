@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>You have {{ remaining_guesses }} guesses left. Guess the numbers below:</h2>
+
+<form action="/submit-guess/{{game_id}}" method="POST">
+  <input name="first-num" autofocus aria-label="first-num">
+  <input name="second-num" autofocus aria-label="second-num">
+  <input name="third-num" autofocus aria-label="third-num">
+  <input name="fourth-num" autofocus aria-label="fourth-num">
+  <button type="submit">Make guess!</button>
+
+</form>
+
+<div>
+  <h2>Your guess history:</h2>
+  <ul>
+    {% for guess in guess_history%}
+    <li>{{ guess }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% endblock %}

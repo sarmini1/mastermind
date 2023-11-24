@@ -46,7 +46,7 @@ class Mastermind():
         )
 
         parsed_response = response.text.splitlines()
-        parsed_nums = [int(str) for str in parsed_response]
+        parsed_nums = [int(line) for line in parsed_response]
 
         return parsed_nums
 

@@ -142,6 +142,7 @@ class Mastermind():
                 correct_locations += 1
             elif num in answer_as_set:
                 correct_nums += 1
+            curr_index += 1
 
         return {
             "won": won,

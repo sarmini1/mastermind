@@ -37,7 +37,9 @@ def start_new_game():
     On POST, start a new game of Mastermind and redirect to gameplay template.
     """
 
-    game = Mastermind()
+    difficulty = int(request.form["difficulty"])
+
+    game = Mastermind(count=difficulty)
     game_id = str(uuid4())
     session[CURR_GAME_KEY] = game_id
     games[game_id] = game
@@ -62,29 +64,30 @@ def submit_guess():
     game.
     """
 
-    try:
-        first_num = int(request.form["first-num"])
-        second_num = int(request.form["second-num"])
-        third_num = int(request.form["third-num"])
-        fourth_num = int(request.form["fourth-num"])
+    guessed_nums = []
+    i = 0
 
-    except ValueError:
-        flash("Your guess is invalid; you can only input integers here.")
-        return redirect(f"/play")
+    for i in range(g.curr_game.count):
+        try:
+            num = int(request.form[f"num-{i}"])
+            guessed_nums.append(num)
+            i += 1
+        except ValueError:
+            flash("Your guess is invalid; you can only input integers here.")
+            return redirect("/play")
 
     game_id = session[CURR_GAME_KEY]
     game = games[game_id]
-    guessed_nums = [first_num, second_num, third_num, fourth_num]
 
+    breakpoint()
     game.handle_guess(guessed_nums)
-
     if game.has_won:
         return redirect("/win")
 
     if game.game_over:
         return redirect("/loss")
 
-    return redirect(f"/play")
+    return redirect("/play")
 
 
 @app.get("/win")
@@ -95,6 +98,7 @@ def display_win():
 
     return render_template("win.html")
 
+
 @app.get("/loss")
 def display_loss():
     """
@@ -103,13 +107,14 @@ def display_loss():
 
     return render_template("loss.html")
 
-@app.post("/restart")
-def restart():
-    """
-    On POST, wipe out the session and redirect to the new-game endpoint.
-    """
 
-    if CURR_GAME_KEY in session:
-        del session[CURR_GAME_KEY]
+# @app.post("/restart")
+# def restart():
+#     """
+#     On POST, wipe out the session and redirect home endpoint.
+#     """
 
-    return redirect("/new-game")
+#     if CURR_GAME_KEY in session:
+#         del session[CURR_GAME_KEY]
+
+#     return redirect("/")

@@ -4,10 +4,13 @@
 <h2>You have {{ g.curr_game.remaining_guesses }} guesses left. Guess the numbers below:</h2>
 
 <form action="/submit-guess" method="POST">
-  <input name="first-num" autofocus aria-label="first-num">
+  <!-- <input name="first-num" autofocus aria-label="first-num">
   <input name="second-num" autofocus aria-label="second-num">
   <input name="third-num" autofocus aria-label="third-num">
-  <input name="fourth-num" autofocus aria-label="fourth-num">
+  <input name="fourth-num" autofocus aria-label="fourth-num"> -->
+  {% for n in range(g.curr_game.count) %}
+  <input name="num-{{n}}">
+  {% endfor %}
   <button type="submit">Make guess!</button>
 
 </form>

@@ -144,6 +144,9 @@ class Mastermind():
                 correct_nums += 1
             curr_index += 1
 
+        if correct_nums == 4 and correct_locations == 4:
+            won = True
+
         return {
             "won": won,
             "correct_nums": correct_nums,

@@ -51,7 +51,7 @@ def start_new_game():
 @app.get("/play")
 def play_game():
     """
-    On GET, renders a template for the user to input their guess for the specified
+    On GET, renders a template for the user to input their guess for the current
     game.
 
     If no current game exists, redirects home.
@@ -66,8 +66,7 @@ def play_game():
 @app.post("/submit-guess")
 def submit_guess():
     """
-    On POST, extract form data and score incoming guess for the specified
-    game.
+    On POST, extract form data and score incoming guess for the current game.
 
     If no current game exists, redirects home.
     """
@@ -107,8 +106,8 @@ def display_win():
     On GET, render a template with a win message and a button to start a new game.
 
     If no current game exists, redirects home.
-
     """
+
     if "curr_game" not in g:
         return redirect("/")
 

@@ -16,7 +16,7 @@ games = {}
 
 @app.before_request
 def add_curr_game_to_g():
-    """If a game has been started, put into onto g before each request."""
+    """If a game has been started, put the instance onto g before each request."""
 
     if CURR_GAME_KEY in session:
         g.curr_game = games[session[CURR_GAME_KEY]]
@@ -53,7 +53,13 @@ def play_game():
     """
     On GET, renders a template for the user to input their guess for the specified
     game.
+
+    If no current game exists, redirects home.
     """
+
+    if "curr_game" not in g:
+        return redirect("/")
+
     return render_template("gameplay.html")
 
 
@@ -62,7 +68,12 @@ def submit_guess():
     """
     On POST, extract form data and score incoming guess for the specified
     game.
+
+    If no current game exists, redirects home.
     """
+
+    if "curr_game" not in g:
+        return redirect("/")
 
     guessed_nums = []
     i = 0
@@ -94,7 +105,12 @@ def submit_guess():
 def display_win():
     """
     On GET, render a template with a win message and a button to start a new game.
+
+    If no current game exists, redirects home.
+
     """
+    if "curr_game" not in g:
+        return redirect("/")
 
     return render_template("win.html")
 
@@ -103,7 +119,12 @@ def display_win():
 def display_loss():
     """
     On GET, render a template with a loss message and a button to start a new game.
+
+    If no current game exists, redirects home.
     """
+
+    if "curr_game" not in g:
+        return redirect("/")
 
     return render_template("loss.html")
 

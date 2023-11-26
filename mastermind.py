@@ -47,8 +47,8 @@ class Mastermind():
 
     def handle_guess(self, guessed_nums):
         """
-        Takes in a set of guessed numbers, scores them, and updates the game
-        instance accordingly:
+        Takes in a list of guessed_nums, scores them, and updates the game
+        instance accordingly as outlined below. Returns None.
 
         Always:
 

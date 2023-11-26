@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<h2>Start a new game of Mastermind below!</h2>
+
 <form action="/new-game" method="POST">
   <label for="difficulty">Difficulty:</label>
   <select id="difficulty" name="difficulty">

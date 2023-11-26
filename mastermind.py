@@ -7,18 +7,18 @@ class Mastermind():
     "The Mastermind game."
 
     def __init__(self, count):
-        """What needs to happen when a game instance is made."""
+        """Initializing various properties when a new instance is made."""
 
-        self.answer = self.fetch_random_nums(count)
+        self.count = count
+        self.answer = self._fetch_random_nums(count)
         # self.score = 0
         self.has_won = False
         self.game_over = False
         self.guessed_nums_history = []
         self.feedback = []
         self.remaining_guesses = 10
-        self.count = count
 
-    def fetch_random_nums(self, count=4):
+    def _fetch_random_nums(self, count=4):
         """
         Makes an API request to fetch a specified count of random numbers.
         If no count is provided as a parameter, the default will be 4.

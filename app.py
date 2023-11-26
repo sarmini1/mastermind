@@ -1,16 +1,22 @@
 import os
 
+from dotenv import load_dotenv
 from flask import Flask, request, render_template, session, redirect, flash, g
 from uuid import uuid4
 
 from mastermind import Mastermind
+
+# Flask loads our environmental variables for us when we start the app, but
+# it's a good idea to load them explicitly in case we run this file without
+# Flask.
+load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 
 CURR_GAME_KEY = "curr_game"
 
-# TODO: store games in a DB instead
+# TODO: store games in a DB via an ORM like SQLAlchemy instead
 games = {}
 
 
@@ -77,13 +83,15 @@ def submit_guess():
     guessed_nums = []
     i = 0
 
+    # There could be either 4, 6, or 8 inputs to collect, so better to do it
+    # dynamically
     for i in range(g.curr_game.count):
         try:
             num = int(request.form[f"num-{i}"])
             guessed_nums.append(num)
             i += 1
         except ValueError:
-            flash("Your guess is invalid; you can only input integers here.")
+            flash("Your guess is invalid; you must only input integers here.")
             return redirect("/play")
 
     game_id = session[CURR_GAME_KEY]

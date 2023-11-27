@@ -1,64 +1,22 @@
-# Note: this is a scrap document I'm using to plan how to shape the data once
-# I incorporate an ORM
-
 from collections import Counter
 
 import requests
 
 
-class MastermindGame():
+class Mastermind():
     "The Mastermind game."
 
-    __tablename__ = 'mastermind_games'
+    def __init__(self, count):
+        """Initializing various properties when a new instance is made."""
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-
-    difficulty = db.Column(
-        db.Text,
-        nullable=False,
-    )
-
-    answer = db.Column(
-        db.Integer,
-        nullable=False,
-    )
-
-    has_won = db.Column(
-        db.Boolean,
-        nullable=False,
-        default=False,
-    )
-
-    game_over = db.Column(
-        db.Boolean,
-        nullable=False,
-        default=False,
-    )
-
-    guess_history = db.relationship('Guess', order_by='Guess.occurred_at.desc()')
-
-
-    def __repr__(self):
-        return f"<MastermindGame {self.id}, answer: {self.answer}>"
-
-    # guessed_nums_history would be a 1:M relationship to the guesses table
-    # feedback would be derived from the above relationship
-    # remaining guesses would be as well
-
-    # def __init__(self, count):
-    #     """Initializing various properties when a new instance is made."""
-
-    #     self.count = count
-    #     self.answer = self._fetch_random_nums(count)
-    #     # self.score = 0
-    #     self.has_won = False
-    #     self.game_over = False
-    #     self.guessed_nums_history = []
-    #     self.feedback = []
-    #     self.remaining_guesses = 10
+        self.count = count
+        self.answer = self._fetch_random_nums(count)
+        # self.score = 0
+        self.has_won = False
+        self.game_over = False
+        self.guessed_nums_history = []
+        self.feedback = []
+        self.remaining_guesses = 10
 
     def _fetch_random_nums(self, count=4):
         """
@@ -248,44 +206,3 @@ class MastermindGame():
             "correct_nums": correct_nums,
             "correct_locations": correct_locations
         }
-
-
-class Guess():
-    "An individual guess made for a particular game."
-
-    __tablename__ = 'guesses'
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-
-    game_id = db.Column(
-        db.Integer,
-        db.ForeignKey('mastermind_games.id', ondelete="cascade"),
-        nullable=False,
-    )
-
-    numbers_guessed = db.Column(
-        db.Integer,
-        nullable=False,
-    )
-
-    correct_num_count = db.Column(
-        db.Integer,
-        nullable=False,
-    )
-
-    correct_location_count = db.Column(
-        db.Integer,
-        nullable=False,
-    )
-
-    occurred_at = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=datetime.utcnow,
-    )
-
-    def __repr__(self):
-        return f"<Guess#{self.id}: {self.game_id} {self.numbers_guessed}>"

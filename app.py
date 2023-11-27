@@ -2,22 +2,27 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, session, redirect, flash, g
-from uuid import uuid4
+# from uuid import uuid4
+from sqlalchemy.exc import IntegrityError
 
-from mastermind import Mastermind
+
+from mastermind import db, connect_db, MastermindGame, Guess
 
 # Flask loads our environmental variables for us when we start the app, but
 # it's a good idea to load them explicitly in case we run this file without
 # Flask.
 load_dotenv()
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
-
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql:///MastermindGame')
 CURR_GAME_KEY = "curr_game"
 
-# TODO: store games in a DB via an ORM like SQLAlchemy instead
-games = {}
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = True
+
+connect_db(app)
 
 
 @app.before_request
@@ -25,7 +30,8 @@ def add_curr_game_to_g():
     """If a game has been started, put the instance onto g before each request."""
 
     if CURR_GAME_KEY in session:
-        g.curr_game = games[session[CURR_GAME_KEY]]
+        game_id = session[CURR_GAME_KEY]
+        g.curr_game = MastermindGame.query.get_or_404(game_id)
 
 
 @app.get("/")
@@ -40,15 +46,19 @@ def homepage():
 @app.post("/new-game")
 def start_new_game():
     """
-    On POST, start a new game of Mastermind and redirect to gameplay template.
+    On POST, start a new game of MastermindGame and redirect to gameplay template.
     """
 
-    difficulty = int(request.form["difficulty"])
+    num_count = int(request.form["difficulty"])
 
-    game = Mastermind(count=difficulty)
-    game_id = str(uuid4())
-    session[CURR_GAME_KEY] = game_id
-    games[game_id] = game
+    try:
+        new_game = MastermindGame.generate_new_game(num_count=num_count)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+    # game_id = str(uuid4())
+    session[CURR_GAME_KEY] = new_game.id
 
     flash("New game started!")
     return redirect("/play")
@@ -85,7 +95,7 @@ def submit_guess():
 
     # There could be either 4, 6, or 8 inputs to collect, so better to do it
     # dynamically
-    for i in range(g.curr_game.count):
+    for i in range(g.curr_game.num_count):
         try:
             num = int(request.form[f"num-{i}"])
             guessed_nums.append(num)
@@ -94,15 +104,17 @@ def submit_guess():
             flash("Your guess is invalid; you must only input integers here.")
             return redirect("/play")
 
-    game_id = session[CURR_GAME_KEY]
-    game = games[game_id]
-
     breakpoint()
-    game.handle_guess(guessed_nums)
-    if game.has_won:
+    try:
+        g.curr_game.handle_guess(guessed_nums)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+    if g.curr_game.has_won:
         return redirect("/win")
 
-    if game.game_over:
+    if g.curr_game.game_over:
         return redirect("/loss")
 
     return redirect("/play")

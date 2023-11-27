@@ -5,7 +5,7 @@
 
 <form action="/submit-guess" method="POST">
 
-  {% for n in range(g.curr_game.count) %}
+  {% for n in range(g.curr_game.num_count) %}
   <label for="{{n}}">Num {{n}}:</label>
   <input name="num-{{n}}" id="{{n}}">
   <br>
@@ -16,13 +16,13 @@
 </form>
 
 <div>
-  {% if g.curr_game.guessed_nums_history|length > 0 %}
+  {% if g.curr_game.guess_history |length > 0 %}
 
   <h2>Your guess history:</h2>
   <ul>
-    {% for guess in g.curr_game.guessed_nums_history %}
+    {% for guess in g.curr_game.guess_history %}
     <li>
-      {{loop.index0 + 1}}: {{ guess }} -- {{g.curr_game.feedback[loop.index0]}}
+      {{loop.index0 + 1}}: {{ guess.numbers_guessed }} -- {{g.curr_game.feedback[loop.index0]}}
     </li>
     {% endfor %}
   </ul>

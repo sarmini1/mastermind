@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = True
+app.config['SQLALCHEMY_ECHO'] = False
 
 connect_db(app)
 
@@ -57,7 +57,6 @@ def start_new_game():
     except IntegrityError:
         db.session.rollback()
 
-    # game_id = str(uuid4())
     session[CURR_GAME_KEY] = new_game.id
 
     flash("New game started!")

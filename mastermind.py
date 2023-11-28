@@ -2,15 +2,12 @@
 # I incorporate an ORM
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import ARRAY
+from sqlalchemy.ext.mutable import MutableList
 import requests
 
 from datetime import datetime
 from collections import Counter
-from utils import (
-    convert_nums_to_int_list,
-    convert_str_list_to_num,
-    convert_int_list_to_num,
-)
 
 db = SQLAlchemy()
 
@@ -33,7 +30,7 @@ class MastermindGame(db.Model):
     )
 
     answer = db.Column(
-        db.Integer,
+        MutableList.as_mutable(ARRAY(db.Integer)),
         nullable=False,
     )
 
@@ -107,7 +104,7 @@ class MastermindGame(db.Model):
         )
 
         parsed_response = response.text.splitlines()
-        combined_nums = convert_str_list_to_num(parsed_response)
+        combined_nums = [int(s) for s in parsed_response]
 
         return combined_nums
 
@@ -149,12 +146,20 @@ class MastermindGame(db.Model):
 
     @property
     def remaining_guesses(self):
-        # breakpoint()
+        """
+        Determines how many guesses are remaining for the current game instance.
+        Returns this number as an integer.
+        """
         return 10 - len(self.guess_history)
 
     @property
     def feedback(self):
-        """"""
+        """Iterates through the current instance's history of guesses and returns
+        a list of strings describing the result of each guess, like:
+
+        ["All incorrect.", "2 correct number(s) and 1 correct location(s), ..."]
+
+        """
 
         feedback = []
 
@@ -206,24 +211,23 @@ class MastermindGame(db.Model):
         }
         """
 
-        answer_as_list = convert_nums_to_int_list(self.answer)
-
         # Succeed fast and immediately check for a win
-        if guessed_nums == answer_as_list:
+        if guessed_nums == self.answer:
             return {
                 "won": True,
-                "correct_nums": self.count,
-                "correct_locations": self.count
+                "correct_nums": self.num_count,
+                "correct_locations": self.num_count
             }
 
         won = False
         correct_nums = 0
         correct_locations = 0
+
         # Using a set will allow us to have a more efficient lookup while
         # searching through the list of hidden numbers.
-        answer_as_set = set(answer_as_list)
+        answer_as_set = set(self.answer)
 
-        frequencies_in_answer = Counter(answer_as_list)
+        frequencies_in_answer = Counter(self.answer)
         correct_counters = {
             key: {
                 "correct_nums": 0,
@@ -263,7 +267,7 @@ class MastermindGame(db.Model):
 
         for num in guessed_nums:
 
-            if answer_as_list[curr_index] == num:
+            if self.answer[curr_index] == num:
                 curr_correct_num_count = correct_counters[num]["correct_nums"]
                 if curr_correct_num_count < frequencies_in_answer[num]:
                     correct_counters[num]["correct_nums"] += 1
@@ -310,7 +314,7 @@ class Guess(db.Model):
     )
 
     numbers_guessed = db.Column(
-        db.Integer,
+        MutableList.as_mutable(ARRAY(db.Integer)),
         nullable=False,
     )
 
@@ -340,10 +344,9 @@ class Guess(db.Model):
     ):
         """Creates, adds and returns a new instance of the Guess class."""
 
-        combined_nums = convert_int_list_to_num(numbers_guessed)
         new_guess = Guess(
             game_id=game_id,
-            numbers_guessed=combined_nums,
+            numbers_guessed=numbers_guessed,
             correct_num_count=correct_num_count,
             correct_location_count=correct_location_count,
         )

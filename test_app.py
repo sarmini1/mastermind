@@ -55,7 +55,7 @@ class MastermindAppTestCase(TestCase):
             response = client.post(
                 '/new-game',
                 data={
-                    "difficulty": "4"
+                    "num-count": "4"
                 },
                 follow_redirects=True
             )

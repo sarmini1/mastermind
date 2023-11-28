@@ -148,8 +148,8 @@ class MastermindAppTestCase(TestCase):
 
     def test_lose(self):
         """
-        Test that we can submit the correct guess and get redirected to the
-        win page.
+        Test that we can submit the correct amount of wrong guesses to get to the
+        loss page.
         """
 
         with app.test_client() as client:
@@ -158,7 +158,6 @@ class MastermindAppTestCase(TestCase):
 
             # Make 9 wrong guesses
             for i in range(10):
-                print("RAN ONCE")
                 client.post(
                     '/submit-guess',
                     data={

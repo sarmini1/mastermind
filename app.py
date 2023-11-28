@@ -44,11 +44,10 @@ def homepage():
 @app.post("/new-game")
 def start_new_game():
     """
-    On POST, start a new game of MastermindGame and redirect to gameplay template.
+    On POST, start a new instance of MastermindGame and redirect to gameplay template.
     """
 
-    # TODO: figure out the right name here
-    num_count = int(request.form["difficulty"])
+    num_count = int(request.form["num-count"])
 
     try:
         new_game = MastermindGame.generate_new_game(num_count=num_count)
@@ -89,7 +88,6 @@ def submit_guess():
         return redirect("/")
 
     guessed_nums = []
-    # i = 0
 
     # There could be either 4, 6, or 8 inputs to collect, so better to do it
     # dynamically
@@ -97,7 +95,6 @@ def submit_guess():
         try:
             num = int(request.form[f"num-{i}"])
             guessed_nums.append(num)
-            # i += 1
         except ValueError:
             flash("Your guess is invalid; you must only input integers here.")
             return redirect("/play")
@@ -143,15 +140,3 @@ def display_loss():
         return redirect("/")
 
     return render_template("loss.html")
-
-
-# @app.post("/restart")
-# def restart():
-#     """
-#     On POST, wipe out the session and redirect home endpoint.
-#     """
-
-#     if CURR_GAME_KEY in session:
-#         del session[CURR_GAME_KEY]
-
-#     return redirect("/")

@@ -5,6 +5,7 @@ import requests
 
 from datetime import datetime
 from collections import Counter
+
 from db import db
 
 

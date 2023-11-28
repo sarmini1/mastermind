@@ -23,6 +23,8 @@ app.config['SQLALCHEMY_ECHO'] = False
 
 connect_db(app)
 
+# TODO: CSRF protection!!
+
 
 @app.before_request
 def add_curr_game_to_g():

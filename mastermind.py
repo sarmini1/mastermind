@@ -45,7 +45,7 @@ class MastermindGame(db.Model):
 
     guess_history = db.relationship(
         'Guess',
-        order_by='Guess.occurred_at.desc()'
+        order_by='Guess.occurred_at.asc()'
     )
 
     def __repr__(self):

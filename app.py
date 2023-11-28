@@ -2,9 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, session, redirect, flash, g
-# from uuid import uuid4
 from sqlalchemy.exc import IntegrityError
-
 
 from mastermind import db, connect_db, MastermindGame, Guess
 
@@ -13,7 +11,7 @@ from mastermind import db, connect_db, MastermindGame, Guess
 # Flask.
 load_dotenv()
 
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql:///MastermindGame')
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql:///mastermind')
 CURR_GAME_KEY = "curr_game"
 
 app = Flask(__name__)
@@ -49,6 +47,7 @@ def start_new_game():
     On POST, start a new game of MastermindGame and redirect to gameplay template.
     """
 
+    # TODO: figure out the right name here
     num_count = int(request.form["difficulty"])
 
     try:

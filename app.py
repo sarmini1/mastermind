@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, render_template, session, redirect, flash, g
 from sqlalchemy.exc import IntegrityError
 
-from mastermind import db, connect_db, MastermindGame, Guess
+from mastermind import db, connect_db, MastermindGame
 
 # Flask loads our environmental variables for us when we start the app, but
 # it's a good idea to load them explicitly in case we run this file without
@@ -89,7 +89,7 @@ def submit_guess():
         return redirect("/")
 
     guessed_nums = []
-    i = 0
+    # i = 0
 
     # There could be either 4, 6, or 8 inputs to collect, so better to do it
     # dynamically
@@ -97,12 +97,11 @@ def submit_guess():
         try:
             num = int(request.form[f"num-{i}"])
             guessed_nums.append(num)
-            i += 1
+            # i += 1
         except ValueError:
             flash("Your guess is invalid; you must only input integers here.")
             return redirect("/play")
 
-    breakpoint()
     try:
         g.curr_game.handle_guess(guessed_nums)
         db.session.commit()

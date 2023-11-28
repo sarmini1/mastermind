@@ -100,7 +100,6 @@ class MastermindGame(db.Model):
 
             - Scores the incoming guess by correct nums and correct locations
             - Creates a new Guess instance and adds to db session
-            - Decrements remaining_guesses by 1
 
         If this was their last remaining guess:
             - Sets game_over to True
@@ -113,7 +112,7 @@ class MastermindGame(db.Model):
 
         score = self.score_guess(numbers_guessed)
 
-        # The below factory method called db.session.add() for the new guess
+        # The below factory method calls db.session.add() for the new Guess
         Guess.generate_new_guess(
             game_id=self.id,
             numbers_guessed=numbers_guessed,
@@ -177,8 +176,9 @@ class MastermindGame(db.Model):
 
     def score_guess(self, numbers_guessed):
         """
-        Takes in a list of numbers_guessed, compares them to the hidden answer numbers,
-        and returns the correct number and correct location counts in a dictionary.
+        Takes in a list of numbers_guessed, compares them to the hidden answer
+        numbers, and returns the correct number, correct location counts, and
+        if a win has occurred in a dictionary.
 
         For example, if the hidden answer numbers were [1,5,7,8]:
 
@@ -216,34 +216,6 @@ class MastermindGame(db.Model):
                 "correct_locations": 0
             } for key in answer_as_set
         }
-
-        # scrap while figuring out strategy for dupes
-        # {
-        # 1: {correct_nums: 1, correct_locations: 1}
-        # 4: {correct_nums: 2, correct_locations: 1}
-        # }
-        #
-
-        # {
-        # 0: {correct_nums: 0, correct_locations: 0}
-        # 1: {correct_nums: 1, correct_locations: 0}
-        # 3: {correct_nums: 0, correct_locations: 0}
-        # 5: {correct_nums: 0, correct_locations: 0}
-        # }
-        # guess  [4, 4, 1, 2] 3 correct numbers and 2 correct locations
-        # answer [1, 4, 1, 4]
-
-        # {
-        # 1: {correct_nums: 0, correct_locations: 0}
-        # 4: {correct_nums: 2, correct_locations: 1}
-        # }
-        #
-
-        # guess  [4, 4, 4, 4] 2 correct numbers and 2 correct locations
-        # answer [1, 4, 1, 4]
-
-        # guess  “2 2 1 1”, game responds “1 correct number and 0 correct location”
-        # answer “0 1 3 5”
 
         curr_index = 0
 
@@ -328,7 +300,7 @@ class Guess(db.Model):
         correct_location_count,
     ):
         """
-        Factory method to create, add and return a new instance of the Guess class.
+        Factory method to create and add a new instance of the Guess class.
         """
 
         new_guess = Guess(
@@ -338,7 +310,6 @@ class Guess(db.Model):
             correct_location_count=correct_location_count,
         )
         db.session.add(new_guess)
-        return new_guess
 
 
 def connect_db(app):

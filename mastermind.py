@@ -1,12 +1,11 @@
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ARRAY
 from sqlalchemy.ext.mutable import MutableList
 import requests
 
 from datetime import datetime
 from collections import Counter
-
-db = SQLAlchemy()
+from db import db
 
 
 class MastermindGame(db.Model):
@@ -310,11 +309,3 @@ class Guess(db.Model):
             correct_location_count=correct_location_count,
         )
         db.session.add(new_guess)
-
-
-def connect_db(app):
-    """Connect to database."""
-
-    app.app_context().push()
-    db.app = app
-    db.init_app(app)

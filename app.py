@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from flask import Flask, request, render_template, session, redirect, flash, g
 from sqlalchemy.exc import IntegrityError
 
-from mastermind import db, connect_db, MastermindGame
+from db import db, connect_db
+from mastermind import MastermindGame
 
 # Flask loads our environmental variables for us when we start the app, but
 # it's a good idea to load them explicitly in case we run this file without

@@ -7,6 +7,8 @@ from collections import Counter
 
 from db import db
 
+RANDOM_NUMS_API_BASE_URL = "https://www.random.org/integers/"
+
 
 class MastermindGame(db.Model):
     "The Mastermind game."
@@ -91,7 +93,7 @@ class MastermindGame(db.Model):
         """
 
         response = requests.get(
-            "https://www.random.org/integers/",
+            RANDOM_NUMS_API_BASE_URL,
             params={
                 "num": num_count,
                 "min": lower_bound,

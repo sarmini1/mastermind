@@ -4,9 +4,10 @@
 <h2>You have {{ g.curr_game.remaining_guesses }} guesses left. Guess the numbers below:</h2>
 
 <form action="/submit-guess" method="POST">
+  {{ g.csrf_form.hidden_tag() }}
 
-  {% for n in range(g.curr_game.count) %}
-  <label for="{{n}}">Num {{n}}:</label>
+  {% for n in range(g.curr_game.num_count) %}
+  <label for="{{n}}">Num {{n + 1}}:</label>
   <input name="num-{{n}}" id="{{n}}">
   <br>
   {% endfor %}
@@ -16,16 +17,9 @@
 </form>
 
 <div>
-  {% if g.curr_game.guessed_nums_history|length > 0 %}
+  {% if g.curr_game.guess_history |length > 0 %}
 
-  <h2>Your guess history:</h2>
-  <ul>
-    {% for guess in g.curr_game.guessed_nums_history %}
-    <li>
-      {{loop.index0 + 1}}: {{ guess }} -- {{g.curr_game.feedback[loop.index0]}}
-    </li>
-    {% endfor %}
-  </ul>
+    {% include "_guess_history.html" %}
 
   {% else %}
 

@@ -1,38 +1,100 @@
-from collections import Counter
-
+from sqlalchemy import ARRAY
+from sqlalchemy.ext.mutable import MutableList
 import requests
 
+from datetime import datetime
+from collections import Counter
 
-class Mastermind():
+from db import db
+
+
+class MastermindGame(db.Model):
     "The Mastermind game."
 
-    def __init__(self, count):
-        """Initializing various properties when a new instance is made."""
+    __tablename__ = 'mastermind_games'
 
-        self.count = count
-        self.answer = self._fetch_random_nums(count)
-        # self.score = 0
-        self.has_won = False
-        self.game_over = False
-        self.guessed_nums_history = []
-        self.feedback = []
-        self.remaining_guesses = 10
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
 
-    def _fetch_random_nums(self, count=4):
+    num_count = db.Column(
+        db.Integer,
+        nullable=False,
+        default=4,
+    )
+
+    # NOTE: Only ever using the default lower/upper bounds of 0 & 7 for now, but
+    # these could be configurable for more difficulty in the future.
+    lower_bound = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
+    )
+
+    upper_bound = db.Column(
+        db.Integer,
+        nullable=False,
+        default=7,
+    )
+
+    answer = db.Column(
+        MutableList.as_mutable(ARRAY(db.Integer)),
+        nullable=False,
+    )
+
+    has_won = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+    )
+
+    game_over = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+    )
+
+    guess_history = db.relationship(
+        'Guess',
+        order_by='Guess.occurred_at.asc()'
+    )
+
+    def __repr__(self):
+        return f"<MastermindGame #{self.id}, answer: {self.answer}>"
+
+    @classmethod
+    def generate_new_game(cls, num_count=4, lower_bound=0, upper_bound=7):
+        """Creates and returns a new instance of the class."""
+
+        random_nums = cls._fetch_random_nums(num_count)
+        new_game = MastermindGame(
+            answer=random_nums,
+            num_count=num_count,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+        )
+        db.session.add(new_game)
+        return new_game
+
+    @classmethod
+    def _fetch_random_nums(cls, num_count=4, lower_bound=0, upper_bound=7):
         """
-        Makes an API request to fetch a specified count of random numbers.
-        If no count is provided as a parameter, the default will be 4.
+        Makes an API request to fetch a specified num_count of random numbers.
+        If no num_count is provided as a parameter, the default will be 4.
+        Also accepts lower_bound and upper_bound values. If they are not passed,
+        the defaults will be 0 and 7, respectively.
 
-        Returns fetched numbers in a list, like: [3,6,7,2]
-
+        Returns fetched numbers in an array of integers, like: [1,2,3,4]
         """
 
         response = requests.get(
             "https://www.random.org/integers/",
             params={
-                "num": count,
-                "min": 0,
-                "max": 7,
+                "num": num_count,
+                "min": lower_bound,
+                "max": upper_bound,
                 "col": 1,
                 "base": 10,
                 "format": "plain",
@@ -41,20 +103,72 @@ class Mastermind():
         )
 
         parsed_response = response.text.splitlines()
-        parsed_nums = [int(line) for line in parsed_response]
+        combined_nums = [int(s) for s in parsed_response]
 
-        return parsed_nums
+        return combined_nums
 
-    def handle_guess(self, guessed_nums):
+    @property
+    def remaining_guesses(self):
         """
-        Takes in a list of guessed_nums, scores them, and updates the game
+        Determines how many guesses are remaining for the current game instance.
+        Returns this number as an integer.
+        """
+        return 10 - len(self.guess_history)
+
+    @property
+    def feedback(self):
+        """
+        Iterates through the current instance's history of guesses and returns
+        a list of strings describing the result of each guess, like:
+
+        ["All incorrect.", "2 correct number(s) and 1 correct location(s), ..."]
+        """
+
+        feedback = []
+
+        for guess in self.guess_history:
+            text = self._generate_feedback_text(
+                guess.correct_num_count,
+                guess.correct_location_count
+            )
+            feedback.append(text)
+
+        return feedback
+
+    def _generate_feedback_text(self, correct_nums, correct_locations):
+        """
+        Receives correct_nums and correct_locations params as integers and
+        returns a string containing that information. If the params indicate
+        no correct numbers or locations, this method will return "All incorrect."
+        Otherwise the returned string will contain information like:
+
+        Input: (2, 2)
+
+        Output: "2 correct number(s) and 2 correct location(s)."
+        """
+
+        if correct_nums == 0 and correct_locations == 0:
+            return "All incorrect."
+
+        return f"{correct_nums} correct number(s) and {correct_locations} correct location(s)."
+
+    def validate_num(self, num):
+        """
+        Takes in a single number guessed and validates that it's within the
+        bounds of the current game instance. If it does not, raises ValueError.
+        """
+
+        if num > self.upper_bound or num < self.lower_bound:
+            raise ValueError()
+
+    def handle_guess(self, numbers_guessed):
+        """
+        Takes in a list of numbers_guessed, scores them, and updates the game
         instance accordingly as outlined below. Returns None.
 
         Always:
-
-            - Stores their guess in the guessed_nums_history property
-            - Stores their feedback in the property by the same name
-            - Decrements remaining_guesses by 1
+            - Scores the incoming guess by correct nums and correct locations
+            - Creates a new Guess instance and adds to db session
 
         If this was their last remaining guess:
             - Sets game_over to True
@@ -62,16 +176,17 @@ class Mastermind():
         If their guess is correct:
             - Updates the has_won property to True
             - Sets game_over to True
-
         """
 
-        score = self.score_guess(guessed_nums)
-        self.guessed_nums_history.append(guessed_nums)
+        score = self.score_guess(numbers_guessed)
 
-        feedback = self._generate_feedback(score)
-        self.feedback.append(feedback)
-
-        self.remaining_guesses -= 1
+        # The below factory method calls db.session.add() for the new Guess
+        Guess.generate_new_guess(
+            game_id=self.id,
+            numbers_guessed=numbers_guessed,
+            correct_num_count=score["correct_nums"],
+            correct_location_count=score["correct_locations"]
+        )
 
         if self.remaining_guesses == 0:
             self.game_over = True
@@ -80,39 +195,16 @@ class Mastermind():
             self.game_over = True
             self.has_won = True
 
-    def _generate_feedback(self, score):
+    def score_guess(self, numbers_guessed):
         """
-        Receives a score, passed in as a dictionary, and returns a string
-        containing information about the score. If the score indicates no
-        correct numbers and locations, this method will return "All incorrect."
-        Otherwise the returned string will contain information like:
-
-        Input: {
-            "correct_nums": 2,
-            "correct_locations: 2
-        }
-
-        Output: "2 correct number(s) and 2 correct location(s)."
-
-        """
-
-        correct_nums = score["correct_nums"]
-        correct_locations = score["correct_locations"]
-
-        if correct_nums == 0 and correct_locations == 0:
-            return "All incorrect."
-
-        return f"{correct_nums} correct number(s) and {correct_locations} correct location(s)."
-
-    def score_guess(self, guessed_nums):
-        """
-        Takes in a list of guessed_nums, compares them to the hidden answer numbers,
-        and returns the correct number and correct location counts in a dictionary.
+        Takes in a list of numbers_guessed, compares them to the hidden answer
+        numbers, and returns the correct number, correct location counts, and
+        if a win has occurred in a dictionary.
 
         For example, if the hidden answer numbers were [1,5,7,8]:
 
         Input:
-        guessed_nums = [1,2,3,4]
+        numbers_guessed = [1,2,3,4]
 
         Output:
         {
@@ -123,11 +215,11 @@ class Mastermind():
         """
 
         # Succeed fast and immediately check for a win
-        if guessed_nums == self.answer:
+        if numbers_guessed == self.answer:
             return {
                 "won": True,
-                "correct_nums": self.count,
-                "correct_locations": self.count
+                "correct_nums": self.num_count,
+                "correct_locations": self.num_count
             }
 
         won = False
@@ -146,37 +238,9 @@ class Mastermind():
             } for key in answer_as_set
         }
 
-        # scrap while figuring out strategy for dupes
-        # {
-        # 1: {correct_nums: 1, correct_locations: 1}
-        # 4: {correct_nums: 2, correct_locations: 1}
-        # }
-        #
-
-        # {
-        # 0: {correct_nums: 0, correct_locations: 0}
-        # 1: {correct_nums: 1, correct_locations: 0}
-        # 3: {correct_nums: 0, correct_locations: 0}
-        # 5: {correct_nums: 0, correct_locations: 0}
-        # }
-        # guess  [4, 4, 1, 2] 3 correct numbers and 2 correct locations
-        # answer [1, 4, 1, 4]
-
-        # {
-        # 1: {correct_nums: 0, correct_locations: 0}
-        # 4: {correct_nums: 2, correct_locations: 1}
-        # }
-        #
-
-        # guess  [4, 4, 4, 4] 2 correct numbers and 2 correct locations
-        # answer [1, 4, 1, 4]
-
-        # guess  “2 2 1 1”, game responds “1 correct number and 0 correct location”
-        # answer “0 1 3 5”
-
         curr_index = 0
 
-        for num in guessed_nums:
+        for num in numbers_guessed:
 
             if self.answer[curr_index] == num:
                 curr_correct_num_count = correct_counters[num]["correct_nums"]
@@ -188,8 +252,10 @@ class Mastermind():
             elif num in answer_as_set:
 
                 # if the number exists in the combination overall,
-                # check if the current correct count is above the frequency of the number in the combo overall
-                # if it is, do not increment that number's correct number count
+                # check if the current correct count is less than the frequency
+                # of the number in the combo overall
+                # if it is, increment that number's correct number count
+                # if not, do nothing
                 curr_correct_num_count = correct_counters[num]["correct_nums"]
 
                 if curr_correct_num_count < frequencies_in_answer[num]:
@@ -206,3 +272,64 @@ class Mastermind():
             "correct_nums": correct_nums,
             "correct_locations": correct_locations
         }
+
+
+class Guess(db.Model):
+    "An individual guess made for a particular game."
+
+    __tablename__ = 'guesses'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    game_id = db.Column(
+        db.Integer,
+        db.ForeignKey('mastermind_games.id', ondelete="cascade"),
+        nullable=False,
+    )
+
+    numbers_guessed = db.Column(
+        MutableList.as_mutable(ARRAY(db.Integer)),
+        nullable=False,
+    )
+
+    correct_num_count = db.Column(
+        db.Integer,
+        nullable=False,
+    )
+
+    correct_location_count = db.Column(
+        db.Integer,
+        nullable=False,
+    )
+
+    occurred_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+
+    def __repr__(self):
+        return f"<Guess #{self.id} for game {self.game_id}, {self.numbers_guessed}>"
+
+    @classmethod
+    def generate_new_guess(
+        cls,
+        game_id,
+        numbers_guessed,
+        correct_num_count,
+        correct_location_count,
+    ):
+        """
+        Factory method to create and add a new instance of the Guess class.
+        """
+
+        new_guess = Guess(
+            game_id=game_id,
+            numbers_guessed=numbers_guessed,
+            correct_num_count=correct_num_count,
+            correct_location_count=correct_location_count,
+        )
+        db.session.add(new_guess)

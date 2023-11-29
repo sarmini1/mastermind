@@ -2,22 +2,27 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, session, redirect, flash, g
-from uuid import uuid4
+from sqlalchemy.exc import IntegrityError
 
-from mastermind import Mastermind
+from db import db, connect_db
+from mastermind import MastermindGame
+from forms import CSRFForm
 
 # Flask loads our environmental variables for us when we start the app, but
 # it's a good idea to load them explicitly in case we run this file without
 # Flask.
 load_dotenv()
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
-
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql:///mastermind')
 CURR_GAME_KEY = "curr_game"
 
-# TODO: store games in a DB via an ORM like SQLAlchemy instead
-games = {}
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = False
+
+connect_db(app)
 
 
 @app.before_request
@@ -25,8 +30,14 @@ def add_curr_game_to_g():
     """If a game has been started, put the instance onto g before each request."""
 
     if CURR_GAME_KEY in session:
-        g.curr_game = games[session[CURR_GAME_KEY]]
+        game_id = session[CURR_GAME_KEY]
+        g.curr_game = MastermindGame.query.get_or_404(game_id)
 
+@app.before_request
+def add_csrf_form_to_g():
+    """Add a blank CSRF form for that protection before each request."""
+
+    g.csrf_form = CSRFForm()
 
 @app.get("/")
 def homepage():
@@ -40,18 +51,24 @@ def homepage():
 @app.post("/new-game")
 def start_new_game():
     """
-    On POST, start a new game of Mastermind and redirect to gameplay template.
+    On POST, start a new instance of MastermindGame and redirect to gameplay template.
     """
 
-    difficulty = int(request.form["difficulty"])
+    if g.csrf_form.validate_on_submit():
 
-    game = Mastermind(count=difficulty)
-    game_id = str(uuid4())
-    session[CURR_GAME_KEY] = game_id
-    games[game_id] = game
+        num_count = int(request.form["num-count"])
+        try:
+            new_game = MastermindGame.generate_new_game(num_count=num_count)
+            db.session.commit()
+            session[CURR_GAME_KEY] = new_game.id
+            flash("New game started!")
+        except IntegrityError:
+            db.session.rollback()
 
-    flash("New game started!")
-    return redirect("/play")
+        return redirect("/play")
+    else:
+        flash("You didn't come from the right place and we're onto you!")
+        return redirect("/")
 
 
 @app.get("/play")
@@ -80,29 +97,33 @@ def submit_guess():
     if "curr_game" not in g:
         return redirect("/")
 
+    if not g.csrf_form.validate_on_submit():
+        flash("You didn't come from the right place and we're onto you!")
+        return redirect("/")
+
     guessed_nums = []
-    i = 0
 
     # There could be either 4, 6, or 8 inputs to collect, so better to do it
     # dynamically
-    for i in range(g.curr_game.count):
+    for i in range(g.curr_game.num_count):
         try:
             num = int(request.form[f"num-{i}"])
+            g.curr_game.validate_num(num)
             guessed_nums.append(num)
-            i += 1
         except ValueError:
-            flash("Your guess is invalid; you must only input integers here.")
+            flash(f"Integers must be between {g.curr_game.lower_bound} and {g.curr_game.upper_bound}.")
             return redirect("/play")
 
-    game_id = session[CURR_GAME_KEY]
-    game = games[game_id]
+    try:
+        g.curr_game.handle_guess(guessed_nums)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
 
-    breakpoint()
-    game.handle_guess(guessed_nums)
-    if game.has_won:
+    if g.curr_game.has_won:
         return redirect("/win")
 
-    if game.game_over:
+    if g.curr_game.game_over:
         return redirect("/loss")
 
     return redirect("/play")
@@ -134,15 +155,3 @@ def display_loss():
         return redirect("/")
 
     return render_template("loss.html")
-
-
-# @app.post("/restart")
-# def restart():
-#     """
-#     On POST, wipe out the session and redirect home endpoint.
-#     """
-
-#     if CURR_GAME_KEY in session:
-#         del session[CURR_GAME_KEY]
-
-#     return redirect("/")

@@ -1,7 +1,7 @@
 MastermindGame
 ==========
 
-A server-side app for playing MastermindGame!
+A server-side app for playing Mastermind!
 
 Introduction
 ============
@@ -35,12 +35,12 @@ and are used by instance methods as needed).
 
 With the models doing a lot of the work, the routes themselves can be focused on the
 web-related logic-- taking in data from the request, running operations defined
-in a class elsewhere, and returning data or redirecting if necessary.
+elsewhere, and returning data or redirecting if necessary.
 
 I chose to incorporate the session to allow my application to send small bits of data
 as a cookie to the browser (and to receive it back) to easily keep track of which game
 is being played. At this time, the current game id is the only piece of data in the session.
-I chose this as it's a fairly straightforward way of keeping track of the current game,
+I chose this approach as it's a fairly straightforward way of keeping track of the current game,
 plus, if I were to deploy, then people on different browsers would be able to play
 their own games.
 
@@ -81,7 +81,7 @@ Add a `.env` file in the top-level directory and include the following:
 ```
 
 You'll need Python3 and PostgreSQL installed globally. Then, create a virtual environment,
-activate it, and install the dependencies:
+activate it, install the dependencies, and create the databases:
 
  - `python3 -m venv venv`
  - `source venv/bin/activate`
@@ -93,7 +93,8 @@ activate it, and install the dependencies:
 Creating the Database Tables
 ============================
 
-From the top-level directory, enter ipython and run the main app.py file with:
+From the top-level directory, enter ipython (type `ipython` in the terminal) and
+run the main app.py file with:
 
 - `%run app.py`
 
@@ -101,7 +102,7 @@ Then, create all tables by running:
 
 - `db.create_all()`
 
-Then quit ipython.
+Then quit ipython (on Mac, this is ctrl+d).
 
 Starting the App
 ================

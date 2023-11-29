@@ -162,6 +162,8 @@ class MastermindGame(db.Model):
         if num > self.upper_bound or num < self.lower_bound:
             raise ValueError()
 
+        return True
+
     def handle_guess(self, numbers_guessed):
         """
         Takes in a list of numbers_guessed, scores them, and updates the game

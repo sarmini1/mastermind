@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>You have {{ g.curr_game.remaining_guesses }} guesses left. Guess the numbers below:</h2>
+<h2>You have {{ g.curr_game.remaining_guesses }} guesses left. Valid inputs are
+  integers between {{ g.curr_game.lower_bound }} and {{ g.curr_game.upper_bound }},
+  inclusive. Guess the numbers below:</h2>
 
 <form action="/submit-guess" method="POST">
   {{ g.csrf_form.hidden_tag() }}

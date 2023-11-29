@@ -80,7 +80,23 @@ Add a `.env` file in the top-level directory and include the following:
   SECRET_KEY=whatever-you-want
 ```
 
-You'll need Python3 and PostgreSQL installed globally. Then, create a virtual environment,
+You'll need Python3 and PostgreSQL installed globally. If you do not have these
+installed globally, you can do so by first installing homebrew at `https://brew.sh/`
+if you are on a Mac.
+
+Then, install Python:
+
+- `brew install python@3.11`
+- `brew link python@3.11`
+
+And PostgreSQL:
+
+- `brew install postgresql@15`
+- `brew link postgresql@15`
+- `brew services start postgresql@15`
+- `createdb`
+
+Then, create a virtual environment,
 activate it, install the dependencies, and create the databases:
 
  - `python3 -m venv venv`

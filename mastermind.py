@@ -58,7 +58,8 @@ class MastermindGame(db.Model):
 
     guess_history = db.relationship(
         'Guess',
-        order_by='Guess.occurred_at.asc()'
+        order_by='Guess.occurred_at.asc()',
+        backref='game'
     )
 
     def __repr__(self):
@@ -310,6 +311,9 @@ class Guess(db.Model):
         nullable=False,
         default=datetime.utcnow,
     )
+
+    # Note: From the relationship defined in the Mastermind class, you can
+    # access a guess's corresponding game instance with .game
 
     def __repr__(self):
         return f"<Guess #{self.id} for game {self.game_id}, {self.numbers_guessed}>"

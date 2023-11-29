@@ -165,6 +165,7 @@ class MastermindAppTestCase(TestCase):
             with client.session_transaction() as change_session:
                 change_session[CURR_GAME_KEY] = self.test_game_id
 
+            # The default test game instance always has an answer of [1,2,3,4]
             response = client.post(
                 '/submit-guess',
                 data={

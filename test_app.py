@@ -9,6 +9,7 @@ import mastermind
 os.environ['DATABASE_URL'] = "postgresql:///mastermind_test"
 
 app.config['TESTING'] = True
+app.config['WTF_CSRF_ENABLED'] = False
 
 mastermind.db.create_all()
 

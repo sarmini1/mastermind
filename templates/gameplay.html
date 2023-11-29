@@ -4,9 +4,10 @@
 <h2>You have {{ g.curr_game.remaining_guesses }} guesses left. Guess the numbers below:</h2>
 
 <form action="/submit-guess" method="POST">
+  {{ g.csrf_form.hidden_tag() }}
 
   {% for n in range(g.curr_game.num_count) %}
-  <label for="{{n}}">Num {{n}}:</label>
+  <label for="{{n}}">Num {{n + 1}}:</label>
   <input name="num-{{n}}" id="{{n}}">
   <br>
   {% endfor %}

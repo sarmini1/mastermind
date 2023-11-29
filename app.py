@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from db import db, connect_db
 from mastermind import MastermindGame
+from forms import CSRFForm
 
 # Flask loads our environmental variables for us when we start the app, but
 # it's a good idea to load them explicitly in case we run this file without
@@ -23,8 +24,6 @@ app.config['SQLALCHEMY_ECHO'] = False
 
 connect_db(app)
 
-# TODO: CSRF protection!!
-
 
 @app.before_request
 def add_curr_game_to_g():
@@ -34,6 +33,11 @@ def add_curr_game_to_g():
         game_id = session[CURR_GAME_KEY]
         g.curr_game = MastermindGame.query.get_or_404(game_id)
 
+@app.before_request
+def add_csrf_form_to_g():
+    """Add a blank CSRF form for that protection before each request."""
+
+    g.csrf_form = CSRFForm()
 
 @app.get("/")
 def homepage():
@@ -50,18 +54,21 @@ def start_new_game():
     On POST, start a new instance of MastermindGame and redirect to gameplay template.
     """
 
-    num_count = int(request.form["num-count"])
+    if g.csrf_form.validate_on_submit():
 
-    try:
-        new_game = MastermindGame.generate_new_game(num_count=num_count)
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
+        num_count = int(request.form["num-count"])
+        try:
+            new_game = MastermindGame.generate_new_game(num_count=num_count)
+            db.session.commit()
+            session[CURR_GAME_KEY] = new_game.id
+            flash("New game started!")
+        except IntegrityError:
+            db.session.rollback()
 
-    session[CURR_GAME_KEY] = new_game.id
-
-    flash("New game started!")
-    return redirect("/play")
+        return redirect("/play")
+    else:
+        flash("You didn't come from the right place and we're onto you!")
+        return redirect("/")
 
 
 @app.get("/play")
@@ -92,15 +99,19 @@ def submit_guess():
 
     guessed_nums = []
 
-    # There could be either 4, 6, or 8 inputs to collect, so better to do it
-    # dynamically
-    for i in range(g.curr_game.num_count):
-        try:
-            num = int(request.form[f"num-{i}"])
-            guessed_nums.append(num)
-        except ValueError:
-            flash("Your guess is invalid; you must only input integers here.")
-            return redirect("/play")
+    if g.csrf_form.validate_on_submit():
+        # There could be either 4, 6, or 8 inputs to collect, so better to do it
+        # dynamically
+        for i in range(g.curr_game.num_count):
+            try:
+                num = int(request.form[f"num-{i}"])
+                guessed_nums.append(num)
+            except ValueError:
+                flash("Your guess is invalid; you must only input integers here.")
+                return redirect("/play")
+    else:
+        flash("You didn't come from the right place and we're onto you!")
+        return redirect("/play")
 
     try:
         g.curr_game.handle_guess(guessed_nums)

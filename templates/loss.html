@@ -8,6 +8,7 @@
 <h3>Look, everyone has those days. Try again, if you want!</h3>
 
 <form action="/new-game" method="POST">
+  {{ g.csrf_form.hidden_tag() }}
   <label for="num-count">Difficulty:</label>
   <select id="num-count" name="num-count">
     <option value="4">Easy - 4 numbers</option>

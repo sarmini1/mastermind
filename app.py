@@ -114,7 +114,6 @@ def submit_guess():
         return redirect("/")
 
     guessed_nums = []
-    # breakpoint()
 
     # There could be either 4, 6, or 8 inputs to collect, so better to do it
     # dynamically

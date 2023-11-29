@@ -97,21 +97,22 @@ def submit_guess():
     if "curr_game" not in g:
         return redirect("/")
 
+    if not g.csrf_form.validate_on_submit():
+        flash("You didn't come from the right place and we're onto you!")
+        return redirect("/")
+
     guessed_nums = []
 
-    if g.csrf_form.validate_on_submit():
-        # There could be either 4, 6, or 8 inputs to collect, so better to do it
-        # dynamically
-        for i in range(g.curr_game.num_count):
-            try:
-                num = int(request.form[f"num-{i}"])
-                guessed_nums.append(num)
-            except ValueError:
-                flash("Your guess is invalid; you must only input integers here.")
-                return redirect("/play")
-    else:
-        flash("You didn't come from the right place and we're onto you!")
-        return redirect("/play")
+    # There could be either 4, 6, or 8 inputs to collect, so better to do it
+    # dynamically
+    for i in range(g.curr_game.num_count):
+        try:
+            num = int(request.form[f"num-{i}"])
+            g.curr_game.validate_num(num)
+            guessed_nums.append(num)
+        except ValueError:
+            flash(f"Integers must be between {g.curr_game.lower_bound} and {g.curr_game.upper_bound}.")
+            return redirect("/play")
 
     try:
         g.curr_game.handle_guess(guessed_nums)

@@ -1,4 +1,3 @@
-# from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ARRAY
 from sqlalchemy.ext.mutable import MutableList
 import requests
@@ -24,6 +23,20 @@ class MastermindGame(db.Model):
         db.Integer,
         nullable=False,
         default=4,
+    )
+
+    # NOTE: Only ever using the default lower/upper bounds of 0 & 7 for now, but
+    # these could also be configurable for more difficulty in the future.
+    lower_bound = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
+    )
+
+    upper_bound = db.Column(
+        db.Integer,
+        nullable=False,
+        default=7,
     )
 
     answer = db.Column(
@@ -52,19 +65,21 @@ class MastermindGame(db.Model):
         return f"<MastermindGame #{self.id}, answer: {self.answer}>"
 
     @classmethod
-    def generate_new_game(cls, num_count=4):
+    def generate_new_game(cls, num_count=4, lower_bound=0, upper_bound=7):
         """Creates and returns a new instance of the class."""
 
         random_nums = cls._fetch_random_nums(num_count)
         new_game = MastermindGame(
             answer=random_nums,
-            num_count=num_count
+            num_count=num_count,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
         )
         db.session.add(new_game)
         return new_game
 
     @classmethod
-    def _fetch_random_nums(cls, num_count=4):
+    def _fetch_random_nums(cls, num_count=4, lower_bound=0, upper_bound=7):
         """
         Makes an API request to fetch a specified num_count of random numbers.
         If no num_count is provided as a parameter, the default will be 4.
@@ -77,8 +92,8 @@ class MastermindGame(db.Model):
             "https://www.random.org/integers/",
             params={
                 "num": num_count,
-                "min": 0,
-                "max": 7,
+                "min": lower_bound,
+                "max": upper_bound,
                 "col": 1,
                 "base": 10,
                 "format": "plain",
@@ -91,13 +106,21 @@ class MastermindGame(db.Model):
 
         return combined_nums
 
+    def validate_num(self, num):
+        """
+        Takes in a single number guessed and validates that it's within the
+        bounds of the current game instance. If it does not, raises ValueError.
+        """
+
+        if num > 7 or num < 0:
+            raise ValueError()
+
     def handle_guess(self, numbers_guessed):
         """
         Takes in a list of numbers_guessed, scores them, and updates the game
         instance accordingly as outlined below. Returns None.
 
         Always:
-
             - Scores the incoming guess by correct nums and correct locations
             - Creates a new Guess instance and adds to db session
 
@@ -109,6 +132,8 @@ class MastermindGame(db.Model):
             - Sets game_over to True
 
         """
+
+
 
         score = self.score_guess(numbers_guessed)
 
@@ -142,7 +167,6 @@ class MastermindGame(db.Model):
         a list of strings describing the result of each guess, like:
 
         ["All incorrect.", "2 correct number(s) and 1 correct location(s), ..."]
-
         """
 
         feedback = []
@@ -159,8 +183,8 @@ class MastermindGame(db.Model):
     def _generate_feedback_text(self, correct_nums, correct_locations):
         """
         Receives correct_nums and correct_locations params as integers and
-        returns a string containing that information. If the score indicates
-        no correct numbers and locations, this method will return "All incorrect."
+        returns a string containing that information. If the params indicate
+        no correct numbers or locations, this method will return "All incorrect."
         Otherwise the returned string will contain information like:
 
         Input: (2, 2)
@@ -231,8 +255,10 @@ class MastermindGame(db.Model):
             elif num in answer_as_set:
 
                 # if the number exists in the combination overall,
-                # check if the current correct count is above the frequency of the number in the combo overall
-                # if it is, do not increment that number's correct number count
+                # check if the current correct count is less than the frequency
+                # of the number in the combo overall
+                # if it is, increment that number's correct number count
+                # if not, do nothing
                 curr_correct_num_count = correct_counters[num]["correct_nums"]
 
                 if curr_correct_num_count < frequencies_in_answer[num]:

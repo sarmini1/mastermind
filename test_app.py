@@ -4,7 +4,6 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import mastermind
-# from mastermind import db, MastermindGame, Guess
 
 os.environ['DATABASE_URL'] = "postgresql:///mastermind_test"
 
@@ -118,7 +117,7 @@ class MastermindAppTestCase(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn("You have 10 guesses left.", html)
             self.assertIn(
-                "Your guess is invalid; you must only input integers here.",
+                "Integers must be between 0 and 7.",
                 html
             )
 

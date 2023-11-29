@@ -110,8 +110,7 @@ class MastermindAppTestCase(TestCase):
 
             self.assertEqual(response.status_code, 200)
             self.assertIn("You have 9 guesses left.", html)
-            self.assertIn(
-                "1 correct number(s) and 1 correct location(s)", html)
+            self.assertIn("1 correct number(s) and 1 correct location(s)", html)
 
     def test_redirect_play_from_win(self):
         """
@@ -218,6 +217,7 @@ class MastermindAppTestCase(TestCase):
             html = response.get_data(as_text=True)
 
             self.assertEqual(response.status_code, 200)
+            self.assertIn("Not quite :/", html)
             self.assertIn("The hidden combination was: [1, 2, 3, 4]", html)
 
     def test_make_invalid_type_guess(self):

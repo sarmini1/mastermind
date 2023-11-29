@@ -13,7 +13,7 @@ from forms import CSRFForm
 # Flask.
 load_dotenv()
 
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql:///mastermind')
+DATABASE_URL = os.environ["DATABASE_URL"]
 CURR_GAME_KEY = "curr_game"
 
 app = Flask(__name__)

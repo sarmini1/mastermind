@@ -41,10 +41,10 @@ If you want to run on port 5000, from the top-level directory, run:
 
  - `flask run`
 
-If port 5000 is already taken by another process, run on the port of your choosing with:
-Note: port 5001 is often a good option!
+If port 5000 is already taken by another process, as is often the case for
+newer machines, run on the port of your choosing with:
 
- - `flask run -p [port number here]`
+ - `flask run -p [port number here] #Note: port 5001 is often a good choice!`
 
 Running Tests
 =============

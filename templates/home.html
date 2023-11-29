@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 
+{% if g.curr_game %}
+<h3>You already have a game in progress!</h3>
+<a href="/play">Continue here!</a>
+
+{% else %}
 <h2>Start a new game of Mastermind below!</h2>
 
 <form action="/new-game" method="POST">
@@ -14,5 +19,7 @@
   <br>
   <button type="submit">Start new game!</button>
 </form>
+
+{% endif %}
 
 {% endblock %}

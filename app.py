@@ -84,8 +84,14 @@ def play_game():
     If no current game exists, redirects home.
     """
 
-    if "curr_game" not in g:
+    if CURR_GAME_KEY not in g:
         return redirect("/")
+
+    if g.curr_game.has_won:
+        return redirect("/win")
+
+    if g.curr_game.game_over:
+        return redirect("/loss")
 
     return render_template("gameplay.html")
 
@@ -94,11 +100,13 @@ def play_game():
 def submit_guess():
     """
     On POST, extract form data and score incoming guess for the current game.
+    If the game is over, redirect to appropriate win/loss route.
+    If the game is still going, redirect to the gameplay route.
 
     If no current game exists, redirects home.
     """
 
-    if "curr_game" not in g:
+    if CURR_GAME_KEY not in g:
         return redirect("/")
 
     if not g.csrf_form.validate_on_submit():
@@ -106,6 +114,7 @@ def submit_guess():
         return redirect("/")
 
     guessed_nums = []
+    # breakpoint()
 
     # There could be either 4, 6, or 8 inputs to collect, so better to do it
     # dynamically
@@ -115,7 +124,9 @@ def submit_guess():
             g.curr_game.validate_num(num)
             guessed_nums.append(num)
         except ValueError:
-            flash(f"Integers must be between {g.curr_game.lower_bound} and {g.curr_game.upper_bound}.")
+            flash(
+                f"Integers must be between {g.curr_game.lower_bound} and {g.curr_game.upper_bound}."
+            )
             return redirect("/play")
 
     try:
@@ -142,8 +153,14 @@ def display_win():
     If no current game exists, redirects home.
     """
 
-    if "curr_game" not in g:
+    if CURR_GAME_KEY not in g:
         return redirect("/")
+
+    if not g.curr_game.has_won and not g.curr_game.game_over:
+        return redirect("/play")
+
+    if not g.curr_game.has_won and g.curr_game.game_over:
+        return redirect("/loss")
 
     return render_template("win.html")
 
@@ -156,7 +173,23 @@ def display_loss():
     If no current game exists, redirects home.
     """
 
-    if "curr_game" not in g:
+    if CURR_GAME_KEY not in g:
         return redirect("/")
 
+    if not g.curr_game.has_won and not g.curr_game.game_over:
+        return redirect("/play")
+
+    if g.curr_game.has_won:
+        return redirect("/win")
+
     return render_template("loss.html")
+
+
+@app.post("/restart")
+def restart():
+    """On POST, delete CURR_GAME_KEY from session and redirect home."""
+
+    if g.csrf_form.validate_on_submit():
+        session.pop(CURR_GAME_KEY)
+
+    return redirect("/")

@@ -92,7 +92,7 @@ class MastermindAppTestCase(TestCase):
             self.assertIn(
                 "1 correct number(s) and 1 correct location(s)", html)
 
-    def test_make_invalid_guess(self):
+    def test_make_invalid_type_guess(self):
         """
         Test that we can submit an invalid guess for a new game instance and see
         that it wasn't counted and we were alerted appropriately.
@@ -109,6 +109,35 @@ class MastermindAppTestCase(TestCase):
                     "num-1": "good",
                     "num-2": "data",
                     "num-3": "nope",
+                },
+                follow_redirects=True
+            )
+            html = response.get_data(as_text=True)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("You have 10 guesses left.", html)
+            self.assertIn(
+                "Integers must be between 0 and 7.",
+                html
+            )
+
+    def test_make_invalid_int_guess(self):
+        """
+        Test that we can submit an invalid guess for a new game instance and see
+        that it wasn't counted and we were alerted appropriately.
+        """
+
+        with app.test_client() as client:
+            with client.session_transaction() as change_session:
+                change_session[CURR_GAME_KEY] = self.test_game_id
+
+            response = client.post(
+                '/submit-guess',
+                data={
+                    "num-0": "8",
+                    "num-1": "8",
+                    "num-2": "8",
+                    "num-3": "8",
                 },
                 follow_redirects=True
             )

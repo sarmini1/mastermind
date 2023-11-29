@@ -26,7 +26,7 @@ class MastermindGame(db.Model):
     )
 
     # NOTE: Only ever using the default lower/upper bounds of 0 & 7 for now, but
-    # these could also be configurable for more difficulty in the future.
+    # these could be configurable for more difficulty in the future.
     lower_bound = db.Column(
         db.Integer,
         nullable=False,
@@ -83,9 +83,10 @@ class MastermindGame(db.Model):
         """
         Makes an API request to fetch a specified num_count of random numbers.
         If no num_count is provided as a parameter, the default will be 4.
+        Also accepts lower_bound and upper_bound values. If they are not passed,
+        the defaults will be 0 and 7, respectively.
 
         Returns fetched numbers in an array of integers, like: [1,2,3,4]
-
         """
 
         response = requests.get(
@@ -105,52 +106,6 @@ class MastermindGame(db.Model):
         combined_nums = [int(s) for s in parsed_response]
 
         return combined_nums
-
-    def validate_num(self, num):
-        """
-        Takes in a single number guessed and validates that it's within the
-        bounds of the current game instance. If it does not, raises ValueError.
-        """
-
-        if num > 7 or num < 0:
-            raise ValueError()
-
-    def handle_guess(self, numbers_guessed):
-        """
-        Takes in a list of numbers_guessed, scores them, and updates the game
-        instance accordingly as outlined below. Returns None.
-
-        Always:
-            - Scores the incoming guess by correct nums and correct locations
-            - Creates a new Guess instance and adds to db session
-
-        If this was their last remaining guess:
-            - Sets game_over to True
-
-        If their guess is correct:
-            - Updates the has_won property to True
-            - Sets game_over to True
-
-        """
-
-
-
-        score = self.score_guess(numbers_guessed)
-
-        # The below factory method calls db.session.add() for the new Guess
-        Guess.generate_new_guess(
-            game_id=self.id,
-            numbers_guessed=numbers_guessed,
-            correct_num_count=score["correct_nums"],
-            correct_location_count=score["correct_locations"]
-        )
-
-        if self.remaining_guesses == 0:
-            self.game_over = True
-
-        if score["won"]:
-            self.game_over = True
-            self.has_won = True
 
     @property
     def remaining_guesses(self):
@@ -190,13 +145,55 @@ class MastermindGame(db.Model):
         Input: (2, 2)
 
         Output: "2 correct number(s) and 2 correct location(s)."
-
         """
 
         if correct_nums == 0 and correct_locations == 0:
             return "All incorrect."
 
         return f"{correct_nums} correct number(s) and {correct_locations} correct location(s)."
+
+    def validate_num(self, num):
+        """
+        Takes in a single number guessed and validates that it's within the
+        bounds of the current game instance. If it does not, raises ValueError.
+        """
+
+        if num > self.upper_bound or num < self.lower_bound:
+            raise ValueError()
+
+    def handle_guess(self, numbers_guessed):
+        """
+        Takes in a list of numbers_guessed, scores them, and updates the game
+        instance accordingly as outlined below. Returns None.
+
+        Always:
+            - Scores the incoming guess by correct nums and correct locations
+            - Creates a new Guess instance and adds to db session
+
+        If this was their last remaining guess:
+            - Sets game_over to True
+
+        If their guess is correct:
+            - Updates the has_won property to True
+            - Sets game_over to True
+        """
+
+        score = self.score_guess(numbers_guessed)
+
+        # The below factory method calls db.session.add() for the new Guess
+        Guess.generate_new_guess(
+            game_id=self.id,
+            numbers_guessed=numbers_guessed,
+            correct_num_count=score["correct_nums"],
+            correct_location_count=score["correct_locations"]
+        )
+
+        if self.remaining_guesses == 0:
+            self.game_over = True
+
+        if score["won"]:
+            self.game_over = True
+            self.has_won = True
 
     def score_guess(self, numbers_guessed):
         """

@@ -1,4 +1,3 @@
-from app import app, CURR_GAME_KEY
 import os
 from unittest import TestCase
 from unittest.mock import patch
@@ -6,6 +5,8 @@ from unittest.mock import patch
 import mastermind
 
 os.environ['DATABASE_URL'] = "postgresql:///mastermind_test"
+
+from app import app, CURR_GAME_KEY
 
 app.config['TESTING'] = True
 app.config['WTF_CSRF_ENABLED'] = False
@@ -45,11 +46,15 @@ class MastermindAppTestCase(TestCase):
                 html
             )
 
-    def test_start_new_game(self):
+    @patch.object(mastermind.requests, "get")
+    def test_start_new_game(self, mock_fetch):
         """
         Test that we can start a new game and get redirected to play
         successfully.
         """
+        # Note: we're mocking requests.get() again here to avoid calling the
+        # real API.
+        mock_fetch.return_value.text = "1\n2\n3\n4\n"
 
         with app.test_client() as client:
             response = client.post(

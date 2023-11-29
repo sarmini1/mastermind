@@ -28,7 +28,7 @@ I also tucked the API call to fetch some random numbers into an internal class
 method on the MastermindGame class for its factory method to lean on.
 
 The MastermindGame class in particular encapsulates a lot of logic, which I organized
-into various instance methods and internal methods (these lead with a single underscore
+into various properties, instance methods and internal methods (these lead with a single underscore
 and are used by instance methods as needed).
 
 ## Routes
@@ -80,7 +80,7 @@ Add a `.env` file in the top-level directory and include the following:
   SECRET_KEY=whatever-you-want
 ```
 
-You'll need Python3 and PostgreSQL installed globally. If you do not have these
+You'll need Python3 and PostgreSQL installed globally. If you **do not** have these
 installed globally, you can do so by first installing homebrew at `https://brew.sh/`
 if you are on a Mac.
 
@@ -96,7 +96,7 @@ And PostgreSQL:
 - `brew services start postgresql@15`
 - `createdb`
 
-Then, create a virtual environment,
+If you have Python3 and PostgreSQL installed, please create a virtual environment,
 activate it, install the dependencies, and create the databases:
 
  - `python3 -m venv venv`

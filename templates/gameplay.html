@@ -19,14 +19,7 @@
 <div>
   {% if g.curr_game.guess_history |length > 0 %}
 
-  <h2>Your guess history:</h2>
-  <ul>
-    {% for guess in g.curr_game.guess_history %}
-    <li>
-      {{loop.index0 + 1}}: {{ guess.numbers_guessed }} -- {{g.curr_game.feedback[loop.index0]}}
-    </li>
-    {% endfor %}
-  </ul>
+    {% include "_guess_history.html" %}
 
   {% else %}
 

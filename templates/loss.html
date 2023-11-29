@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Not quite :/</h1>
+<div>
+  <h1>Not quite :/</h1>
+  <h2>The hidden combination was: {{ g.curr_game.answer }}</h2>
 
-<h2>The hidden combination was: {{ g.curr_game.answer }}</h2>
+  {% include "_guess_history.html" %}
+
+</div>
+
 
 <h3>Look, everyone has those days. Try again, if you want!</h3>
 

@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>You won with {{g.curr_game.remaining_guesses}} guesses remaining!</h1>
+<div>
+  <h1>You won with {{g.curr_game.remaining_guesses}} guesses remaining!</h1>
+  <h2>The answer was indeed {{ g.curr_game.answer }}. Well done!</h2>
 
-<h2>The answer was indeed {{ g.curr_game.answer }}. Well done!</h2>
+  {% include "_guess_history.html" %}
+
+</div>
 
 
 <form action="/new-game" method="POST">

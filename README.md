@@ -74,14 +74,27 @@ that API in our tests. I've reached 96% coverage overall, with 100% coverage of 
 Development Environment Setup
 =============================
 
-Add a `.env` file in the top-level directory and include the following:
-```
-  DATABASE_URL=postgresql:///mastermind
-  SECRET_KEY=whatever-you-want
-```
+## Global Installations
 
-You'll need Python3 and PostgreSQL installed globally. If you **do not** have these
-installed globally, you can do so by first installing homebrew at `https://brew.sh/`
+You'll need Python3 (version 3.10 or newer) and PostgreSQL (ideally version 14 or newer,
+though 12 and 13 are still supported) installed on your machine. If you already have these,
+you shouldn't need to do anything else here and you can move onto the "Configuring
+Application and Installing Dependencies" subsection below.
+
+**Note:** As a backup, I've also created a free PostgreSQL database for the game that you can access
+if you cannot install PostgreSQL to your machine. This database is hosted by ElephantSQL and
+you can use it by including the below value as the `DATABASE_URL` value in your `.env` file:
+
+`postgresql://gcjavyyz:1X4e_glMQc03n-ZItXY5BtbC81l3ldm_@bubble.db.elephantsql.com/gcjavyyz`
+
+If you do use this database url, you'll need to also input it as the value for the `TEST_DATABASE_URL`
+environmental variable in the `.env` file in order to run the tests! Of course, running tests
+on the main dev database isn't ideal, but this data isn't precious!
+
+### Mac
+
+If you **do not** have these
+installed globally, you can do so by first installing homebrew at [Homebrew Documentation](https://brew.sh/)
 if you are on a Mac.
 
 Then, install Python:
@@ -89,12 +102,67 @@ Then, install Python:
 - `brew install python@3.11`
 - `brew link python@3.11`
 
-And PostgreSQL:
+Note: the `brew link python@3.11` command should make Python 3.11 your default version,
+but if that does not work for some reason, this kind person has put together instructions
+on another way of installing Python via homebrew and accomplishing that:
+
+[Python Installation on MacOS by Ahmad Awais](https://ahmadawais.com/python-not-found-on-macos-install-python-with-brew-fix-path/)
+
+Check that Python installed successfully by typing the following in the terminal and
+observing your Python version appearing, with a ">>>" prompt to start typing Python.
+You can then quit out of Python.
+
+- `python3`
+
+Then, install PostgreSQL:
 
 - `brew install postgresql@15`
 - `brew link postgresql@15`
 - `brew services start postgresql@15`
 - `createdb`
+
+Check that PostgreSQL installed successfully by typing the following in the termininal
+and observing your PostgreSQL version appearing, with a prompt below, where you can
+start writing SQL. You can then quit out of PostgreSQL.
+
+- `psql`
+
+### WSL
+
+If you are using WSL and do not have Python3 and PostgreSQL installed
+globally, I've linked to installation guides below:
+
+Installing Python3:
+
+Visit the "Install Python, pip, and venv" section of the following link
+for instructions:
+
+[Microsoft Documentation-- installing Python on WSL](https://learn.microsoft.com/en-us/windows/python/web-frameworks)
+
+Installing PostgreSQL:
+
+Visit the "Install PostgreSQL" section of the following link for
+instructions:
+
+[Microsoft Documentation-- installing PostgreSQL on WSL](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-database)
+
+### Windows
+
+If you are using Windows, please proceed to installing WSL by following
+the instructions here:
+
+[Microsoft Documentation-- installing WSL](https://learn.microsoft.com/en-us/windows/python/web-frameworks)
+
+Then, proceed to the "WSL" section above, in this document.
+
+## Configuring Application and Installing Dependencies
+
+Add a `.env` file in the top-level directory and include the following:
+```
+  SECRET_KEY=whatever-you-want
+  DATABASE_URL=postgresql:///mastermind
+  TEST_DATABASE_URL=postgresql:///mastermind_test
+```
 
 If you have Python3 and PostgreSQL installed, please create a virtual environment,
 activate it, install the dependencies, and create the databases:

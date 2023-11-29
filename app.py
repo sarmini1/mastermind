@@ -33,11 +33,13 @@ def add_curr_game_to_g():
         game_id = session[CURR_GAME_KEY]
         g.curr_game = MastermindGame.query.get_or_404(game_id)
 
+
 @app.before_request
 def add_csrf_form_to_g():
     """Add a blank CSRF form for that protection before each request."""
 
     g.csrf_form = CSRFForm()
+
 
 @app.get("/")
 def homepage():
@@ -63,6 +65,8 @@ def start_new_game():
             session[CURR_GAME_KEY] = new_game.id
             flash("New game started!")
         except IntegrityError:
+            # Rollback a fouled transaction if an error occurs while committing
+            # to the database
             db.session.rollback()
 
         return redirect("/play")
@@ -115,6 +119,7 @@ def submit_guess():
             return redirect("/play")
 
     try:
+        # The below method call will add a new Guess instance to the db session
         g.curr_game.handle_guess(guessed_nums)
         db.session.commit()
     except IntegrityError:

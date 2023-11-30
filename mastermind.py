@@ -69,7 +69,7 @@ class MastermindGame(db.Model):
 
     @classmethod
     def generate_new_game(cls, num_count=4, lower_bound=0, upper_bound=7):
-        """Creates and returns a new instance of the class."""
+        """Creates and returns a new instance of the MastermindGame class."""
 
         random_nums = cls._fetch_random_nums(num_count)
         new_game = MastermindGame(
@@ -158,7 +158,8 @@ class MastermindGame(db.Model):
     def validate_num(self, num):
         """
         Takes in a single number guessed and validates that it's within the
-        bounds of the current game instance. If it does not, raises ValueError.
+        bounds of the current game instance. If so, returns True.
+        If it does not, raises ValueError.
         """
 
         if num > self.upper_bound or num < self.lower_bound:

@@ -27,7 +27,10 @@ connect_db(app)
 
 @app.before_request
 def add_curr_game_to_g():
-    """If a game has been started, put the instance onto g before each request."""
+    """
+    Before every request, look to see if the browser sent a cookie with the
+    current game_id. If so, query to fetch the game instance and put it onto g.
+    """
 
     if CURR_GAME_KEY in session:
         game_id = session[CURR_GAME_KEY]
@@ -54,6 +57,8 @@ def homepage():
 def start_new_game():
     """
     On POST, start a new instance of MastermindGame and redirect to gameplay template.
+
+    If CSRF check fails, redirect home.
     """
 
     if g.csrf_form.validate_on_submit():
@@ -82,6 +87,9 @@ def play_game():
     game.
 
     If no current game exists, redirects home.
+
+    If someone tries to get here after winning or losing a game, redirects to the
+    appropriate win/loss route.
     """
 
     if CURR_GAME_KEY not in g:
@@ -103,7 +111,7 @@ def submit_guess():
     If the game is over, redirect to appropriate win/loss route.
     If the game is still going, redirect to the gameplay route.
 
-    If no current game exists, redirects home.
+    If no current game exists or if CSRF check fails, redirects home.
     """
 
     if CURR_GAME_KEY not in g:
@@ -150,6 +158,10 @@ def display_win():
     On GET, render a template with a win message and a button to start a new game.
 
     If no current game exists, redirects home.
+
+    If someone tries to get here while a game is still active, redirects to
+    play route.
+    If someone tries to get here after losing a game, redirects to loss route.
     """
 
     if CURR_GAME_KEY not in g:
@@ -170,6 +182,10 @@ def display_loss():
     On GET, render a template with a loss message and a button to start a new game.
 
     If no current game exists, redirects home.
+
+    If someone tries to get here while a game is still active, redirects to
+    play route.
+    If someone tries to get here after winning a game, redirects to win route.
     """
 
     if CURR_GAME_KEY not in g:

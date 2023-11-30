@@ -7,7 +7,10 @@ from unittest.mock import patch
 import mastermind
 
 load_dotenv()
+
+# This line must run before we import the app
 os.environ['DATABASE_URL'] = os.environ["TEST_DATABASE_URL"]
+
 from app import app
 
 

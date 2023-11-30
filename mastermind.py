@@ -27,7 +27,7 @@ class MastermindGame(db.Model):
         default=4,
     )
 
-    # NOTE: Only ever using the default lower/upper bounds of 0 & 7 for now, but
+    # NOTE: Using the default lower/upper bounds of 0 & 7 for now, but
     # these could be configurable for more difficulty in the future.
     lower_bound = db.Column(
         db.Integer,

@@ -61,7 +61,7 @@ transaction to the database.
 I incorporated the extension of configurable difficulty levels, where a user can select
 to play a game that has 4 numbers (easy), 6 numbers (medium), or 8 numbers (hard). They
 do this by submitting a form when they start their new game with their choice, which is then
-used to fetch their random number combination and ultimately generate their new MastermindGame game
+used to fetch their random number combination and ultimately generate their new MastermindGame
 instance.
 
 ## Tests
@@ -121,7 +121,7 @@ Then, install PostgreSQL:
 - `brew services start postgresql@15`
 - `createdb`
 
-Check that PostgreSQL installed successfully by typing the following in the termininal
+Check that PostgreSQL installed successfully by typing the following in the terminal
 and observing your PostgreSQL version appearing, with a prompt below, where you can
 start writing SQL. You can then quit out of PostgreSQL.
 

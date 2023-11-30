@@ -247,20 +247,26 @@ class MastermindGame(db.Model):
 
         for num in numbers_guessed:
 
+            # If we find an exact match:
             if self.answer[curr_index] == num:
                 curr_correct_num_count = correct_counters[num]["correct_nums"]
+
+                # Only increment the count of correct nums if we have not
+                # yet met or exceeded the total number of times the number
+                # exists overall, as we have to prepare for duplicate values
+                # down the line
                 if curr_correct_num_count < frequencies_in_answer[num]:
                     correct_counters[num]["correct_nums"] += 1
 
                 correct_counters[num]["correct_locations"] += 1
 
+            # If the number exists in the combination overall:
             elif num in answer_as_set:
 
-                # if the number exists in the combination overall,
-                # check if the current correct count is less than the frequency
-                # of the number in the combo overall
-                # if it is, increment that number's correct number count
-                # if not, do nothing
+                # Check if the current correct count is less than the frequency
+                # of the number in the combo overall.
+                # If so, increment that number's correct number count.
+                # If not, do nothing.
                 curr_correct_num_count = correct_counters[num]["correct_nums"]
 
                 if curr_correct_num_count < frequencies_in_answer[num]:

@@ -84,9 +84,13 @@ Application and Installing Dependencies" subsection below.
 **Note:** As a backup, I've also created a free PostgreSQL database for the game that you can
 access **only if you do not have and cannot install PostgreSQL to your machine**. This database
 is hosted by ElephantSQL and you can use it by including the below value as the
-`DATABASE_URL` value in your `.env` file:
+`DATABASE_URL` value in your `.env` file.
 
 `postgresql://gcjavyyz:1X4e_glMQc03n-ZItXY5BtbC81l3ldm_@bubble.db.elephantsql.com/gcjavyyz`
+
+(It's worth noting that I would never actually do this for an application that has any sort
+of more important information-- I figure it's not the end of the world if innocent game data
+is publicly accessible)
 
 If you do use this database url, you'll need to also input it as the value for the `TEST_DATABASE_URL`
 environmental variable in the `.env` file in order to run the tests! Of course, running tests

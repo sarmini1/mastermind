@@ -88,9 +88,9 @@ is hosted by ElephantSQL and you can use it by including the below value as the
 
 `postgresql://gcjavyyz:1X4e_glMQc03n-ZItXY5BtbC81l3ldm_@bubble.db.elephantsql.com/gcjavyyz`
 
-(It's worth noting that I would never actually do this for an application that has any sort
-of more important information-- I figure it's not the end of the world if innocent game data
-is publicly accessible)
+(It's worth noting that I would never actually display this link for an application that
+has any sort of more important information-- I figure it's not the end of the world if
+innocent game data is publicly accessible.)
 
 If you do use this database url, you'll need to also input it as the value for the `TEST_DATABASE_URL`
 environmental variable in the `.env` file in order to run the tests! Of course, running tests
@@ -99,7 +99,7 @@ on the main dev database isn't ideal, but this data isn't precious!
 If you do use this database url, please note that you will **not** need to create any of the tables
 in the database outlined in the "Creating the Database Tables" subsection below.
 
-### Mac
+#### Mac
 
 If you **do not** have these
 installed globally, you can do so by first installing homebrew at [Homebrew Documentation](https://brew.sh/)
@@ -135,7 +135,7 @@ start writing SQL. You can then quit out of PostgreSQL.
 
 - `psql`
 
-### WSL
+#### WSL
 
 If you are using WSL and do not have Python3 and PostgreSQL installed
 globally, I've linked to installation guides below.
@@ -154,7 +154,7 @@ instructions:
 
 [Microsoft Documentation-- installing PostgreSQL on WSL](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-database)
 
-### Windows
+#### Windows
 
 If you are using Windows, please proceed to installing WSL by following
 the instructions here:

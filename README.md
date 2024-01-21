@@ -1,4 +1,4 @@
-MastermindGame
+Mastermind
 ==========
 
 A server-side app for playing Mastermind!
@@ -80,24 +80,6 @@ You'll need Python3 (version 3.10 or newer) and PostgreSQL (ideally version 14 o
 though 12 and 13 are still supported) installed on your machine. If you already have these,
 you shouldn't need to do anything else here and you can move onto the "Configuring
 Application and Installing Dependencies" subsection below.
-
-**Note:** As a backup, I've also created a free PostgreSQL database for the game that you can
-access **only if you do not have and cannot install PostgreSQL to your machine**. This database
-is hosted by ElephantSQL and you can use it by including the below value as the
-`DATABASE_URL` value in your `.env` file.
-
-`postgresql://gcjavyyz:1X4e_glMQc03n-ZItXY5BtbC81l3ldm_@bubble.db.elephantsql.com/gcjavyyz`
-
-(It's worth noting that I would never actually display this link for an application that
-has any sort of more important information-- I figure it's not the end of the world if
-innocent game data is publicly accessible.)
-
-If you do use this database url, you'll need to also input it as the value for the `TEST_DATABASE_URL`
-environmental variable in the `.env` file in order to run the tests! Of course, running tests
-on the main dev database isn't ideal, but this data isn't precious!
-
-If you do use this database url, please note that you will **not** need to create any of the tables
-in the database outlined in the "Creating the Database Tables" subsection below.
 
 #### Mac
 
